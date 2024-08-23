@@ -32,3 +32,7 @@ jobs:
         destination: ${{ github.event.inputs.destination }}
         destination-credential: ${{ secrets.DESTINATION_CREDENTIAL }}
         copy: "${{ github.event.inputs.source_repo }} ${{ github.event.inputs.destination_repo }}"
+    - name: Sync Docker Image
+      run: |
+        docker tag ${{ github.event.inputs.source_repo }} ${{ github.event.inputs.destination_repo }}
+        docker push ${{ github.event.inputs.destination_repo }}
