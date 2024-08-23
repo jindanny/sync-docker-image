@@ -1,0 +1,41 @@
+name: Docker Image Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: '镜像源 (Registry)'     
+        required: true
+        default: 'docker.io'
+      destination:
+        description: '目标源 (Registry)'
+        required: true
+        default: 'registry.cn-beijing.aliyuncs.com'
+      source_repo:
+        description: '仓库及标签 (格式 repo:tag)'
+        required: true
+        default: ''
+      destination_repo:
+        description: '目标仓库及标签 (格式 repo:tag)'
+        required: true
+        default: ''
+
+jobs:
+  sync-docker-image:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Login to Aliyun
+      run: echo "${{ secrets.ALIYUN_PASSWORD }}" | docker login --username="${{ secrets.ALIYUN_USERNAME }}" --password-stdin "${{ github.event.inputs.destination }}"
+
+    - name: Pull Docker image from DockerHub
+      run: docker pull "${{ github.event.inputs.source_repo }}"
+
+    - name: Tag Docker image for Aliyun
+      run: docker tag "${{ github.event.inputs.source_repo }}" "${{ github.event.inputs.destination }}/${{ github.event.inputs.destination_repo }}"
+
+    - name: Push Docker image to Aliyun
+      run: docker push "${{ github.event.inputs.destination }}/${{ github.event.inputs.destination_repo }}"
